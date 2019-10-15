@@ -18,6 +18,7 @@ const Square = props => {
 };
 
 
+
 const Board = props => {
     const {cells, squares, ...other} = props,
         ArrRows = [0, 1, 2];
@@ -26,10 +27,10 @@ const Board = props => {
     //Renders React element ...
     return (
         <div className="board"> {
-            cells.map((row) =>
-                <div key={row.index} className="board-row">
+            ArrRows.map((row) =>
+                <div key={row.toString()} className="board-row">
                     {
-                        row.map((cellID) =>
+                        cells.slice(row * 3, counter++ * 3).map((cellID) =>
                             <Square key={cellID.toString()} value={squares[cellID]}
                                     onClick={() => other.onClick(cellID)}/>
                         )
@@ -42,14 +43,10 @@ const Board = props => {
 };
 
 
+
 const Status = props => {
-    const {history, squares, xIsNext} = props;
-    const moves = history.map((step, move) => {
-        const clickIndex = step.clickIndex;
-        const col = Math.floor(clickIndex % 3), row = Math.floor(clickIndex / 3);
-        console.log(col, row);
-    });
-    const winner = calculateWinner(squares),
+    const {squares, xIsNext} = props,
+        winner = calculateWinner(squares),
         effect = winner ? 'bounce' : '';
     let status;
 
@@ -118,6 +115,7 @@ class Game extends Component {
         const squares = current.squares.slice();
 
         const col = Math.floor(this.state.stepNumber % 3), row = Math.floor(this.state.stepNumber / 3);
+        console.log(col, row);
         axios.post('http://127.0.0.1:8000/api/insertMove', {
             row: row,
             column: col,
@@ -127,7 +125,7 @@ class Game extends Component {
         });
         squares[i] = this.state.xIsNext ? 'x' : 'o';
         this.setState({
-            history: [{squares: squares, clickIndex: i}],
+            history: history.concat([{squares: squares, clickIndex: i}]),
             stepNumber: history.length,
             xIsNext: !this.state.xIsNext
         });
@@ -144,7 +142,7 @@ class Game extends Component {
         }
         squares[i] = this.state.xIsNext ? 'x' : 'o';
         this.setState({
-            history: [{squares: squares, clickIndex: i}],
+            history: history.concat([{squares: squares, clickIndex: i}]),
             stepNumber: history.length,
             xIsNext: !this.state.xIsNext
         });
@@ -187,10 +185,10 @@ class Game extends Component {
         return (
             <div className="game">
                 <div className="game-board">
-                    <Board squares={squares} onClick={this.handleClick} cells={this.createarray(3, 3)}/>
+                    <Board squares={squares} onClick={this.handleClick} cells={[0, 1, 2, 3, 4, 5, 6, 7, 8]}/>
                 </div>
                 <div className="game-info">
-                    <Status history={this.state.history} squares={squares} xIsNext={this.state.xIsNext}/>
+                    <Status squares={squares} xIsNext={this.state.xIsNext}/>
                     {/*<Moves history={ this.state.history } stepNumber={ this.state.stepNumber } onClick={this.jumpTo} />*/}
                 </div>
             </div>
@@ -198,5 +196,36 @@ class Game extends Component {
     }
 }
 
+// //Render the application
+// ReactDOM.render(
+//     <Game />,
+//     document.getElementById('root')
+// );
+
+
+/**
+ * Scan the entire "squares" array to see if any of the
+ * symbols are aligned in a winning combination.
+ * (In case of winning, return the symbol)
+ **/
+function calculateWinner(squares) {
+    const lines = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6],
+    ];
+    for (let i = 0; i < lines.length; i++) {
+        const [a, b, c] = lines[i];
+        if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+            return squares[a];
+        }
+    }
+    return null;
+}
 
 export default Game;
