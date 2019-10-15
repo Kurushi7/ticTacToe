@@ -2,15 +2,10 @@ import React, {Component} from 'react';
 import axios from 'axios';
 import './game.css';
 
-const array = [
-    ['', '', ''],
-    ['', '', ''],
-    ['', '', '']
-];
-
+const array = [[0, 0], [0, 1], [0, 2], [1, 0], [1, 1], [1, 2], [2, 0], [2, 1], [2, 2]];
 const Square = props => {
     const {value, ...other} = props;
-
+    console.log(value);
     //Renders React element ...
     return (
         <button className={'square ' + value} onClick={() => other.onClick()}>{value}</button>
@@ -64,33 +59,6 @@ const Status = props => {
     );
 };
 
-const Moves = props => {
-    const {history, stepNumber, ...other} = props;
-    const moves = history.map((step, move) => {
-        const clickIndex = step.clickIndex;
-        const col = Math.floor(clickIndex % 3), row = Math.floor(clickIndex / 3);
-
-        const btn_highlight = (stepNumber === move) ? 'btn-primary' : 'btn-secondary';
-        const desc = '';
-        return (
-            <li key={move}>
-                <button className={"btn " + btn_highlight + " btn-block"}
-                        onClick={() => other.onClick(move)}>{desc}</button>
-            </li>
-        );
-    });
-
-    //Renders React element ...
-    return (
-        <div className="game-info__moves">
-            <ol className="list-moves list-unstyled">
-                {moves}
-            </ol>
-        </div>
-    );
-};
-
-
 class Game extends Component {
     //Setup component initial state values and bind methods
     constructor(props) {
@@ -115,7 +83,7 @@ class Game extends Component {
         const squares = current.squares.slice();
 
         const col = Math.floor(this.state.stepNumber % 3), row = Math.floor(this.state.stepNumber / 3);
-        console.log(col, row);
+        console.log(i);
         axios.post('http://127.0.0.1:8000/api/insertMove', {
             row: row,
             column: col,
@@ -175,7 +143,7 @@ class Game extends Component {
         console.log('adhsddsd');
     }
 
-    //Renders React element ...
+
     render() {
         const history = this.state.history;
         const current = history[this.state.stepNumber];
@@ -185,46 +153,19 @@ class Game extends Component {
         return (
             <div className="game">
                 <div className="game-board">
-                    <Board squares={squares} onClick={this.handleClick} cells={[0, 1, 2, 3, 4, 5, 6, 7, 8]}/>
+                    <Board squares={squares} onClick={this.handleClick} cells={array}/>
                 </div>
                 <div className="game-info">
                     <Status squares={squares} xIsNext={this.state.xIsNext}/>
-                    {/*<Moves history={ this.state.history } stepNumber={ this.state.stepNumber } onClick={this.jumpTo} />*/}
                 </div>
             </div>
         );
     }
 }
 
-// //Render the application
-// ReactDOM.render(
-//     <Game />,
-//     document.getElementById('root')
-// );
 
-
-/**
- * Scan the entire "squares" array to see if any of the
- * symbols are aligned in a winning combination.
- * (In case of winning, return the symbol)
- **/
 function calculateWinner(squares) {
-    const lines = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
-        [0, 4, 8],
-        [2, 4, 6],
-    ];
-    for (let i = 0; i < lines.length; i++) {
-        const [a, b, c] = lines[i];
-        if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-            return squares[a];
-        }
-    }
+    //call the api
     return null;
 }
 
